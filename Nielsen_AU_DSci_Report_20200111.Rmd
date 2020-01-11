@@ -28,16 +28,16 @@ library(randomForest)
 
 # Abstract
 
-DONT IGNORE ME
+There is over 70 years of media research to study “what” people watch on television, “who” they are and “when” and “where”  they watch television through Nielsen’s electronic passive television measurement.  However, this rich data does not give insight into the “why” of television watching to limit respondent burden.  NORC’s General Social Survey  provides demographic, attitude and feelings about politics as well as a self-reported average of daily television watching from more than 10,000 respondents.  We used a variety of data exploration and modelling techniques to explore if respondents’ frequency of prayer or reported happiness are drivers of television watching behavior.
 
 
 \pagebreak
 
 # Background
 
-When we tell people we work at Nielsen, we inevitably get questions. If we’re speaking to someone under 40, the first question is, “What is Nielsen?” The second question is "Does anyone still watch TV?"  Yes, in fact they do!  This is supported both by Nielsen's data and a 2018 article in *The Atlantic* marveled at this fact [@HowMuchTV2018]. 
+When we tell people we work at Nielsen, we inevitably get questions. If we’re speaking to someone under 40, the first question is, “What is Nielsen?” The second question is "Does anyone still watch TV?"  Yes, in fact they do!  This is supported both by Nielsen's data as seen in a 2018 article in *The Atlantic* marveled at this fact [@HowMuchTV2018]. 
 
->Over the last 8 years, all the new, non-TV things—Facebook, phones, YouTube, Netflix—have only cut about an hour per day from the dizzying amount of TV that the average household watches. Americans are still watching more than 7 hours and 50 minutes per household per day.
+>"Over the last 8 years, all the new, non-TV things—Facebook, phones, YouTube, Netflix—have only cut about an hour per day from the dizzying amount of TV that the average household watches. Americans are still watching more than 7 hours and 50 minutes per household per day."
 
 ![Hours of TV American Households Watch Per Day](Atlantic-graph.png){#id .class width=95% height=95%}
 
@@ -59,8 +59,9 @@ The GSS survey measures a nationally representative panel's feelings and attitud
 
 The General Social Survey (GSS) is a project of the independent research organization NORC at the University of Chicago, with principal funding from the National Science Foundation.
 
-From the GSS website [@GSSNORC2016]:  
->For more than four decades, the General Social Survey (GSS) has studied the growing complexity of American society. It is the only full-probability, personal-interview survey designed to monitor changes in both social characteristics and attitudes currently being conducted in the United States
+From the GSS website [@GSSNORC2016]:
+
+>"For more than four decades, the General Social Survey (GSS) has studied the growing complexity of American society. It is the only full-probability, personal-interview survey designed to monitor changes in both social characteristics and attitudes currently being conducted in the United States."
 
 Data for this project were downloaded using NORC's GSS data explorer [@GSSData2020]. We downloaded 96 variables representing television viewing, demographics, life satisfaction, family life, politics, and religion from surveys conducted during the period from 2008 to 2018. 
 
@@ -70,7 +71,11 @@ GSS questions vary somewhat from year to year. An example question set from 2014
 
 # Data Exploration
 
-Self reported daily hours of televison watched, the dependent variable, was based on GSS' question regarding the number of hours per day the respondent spends watching television, TV Hours. Unfortunately, this dependent variable had 4,639 pieces of missing data in 13,794 cases. In the interst of time, these were omitted, leaving 9,155 cases. Time allowing, sophisticated methods to address missing data, such as multiple imputations, should be used for a more thorough investigation.
+Self reported daily hours of televison watched, the dependent variable, was based on GSS' question regarding the number of hours per day the respondent spends watching television. This question was abbreviated as TV Hours, and it was asked as follows.
+
+>"On the average day, about how many hours do you personally watch television?" 
+
+Unfortunately, this dependent variable had 4,639 pieces of missing data in 13,794 cases. In the interst of time, these were omitted, leaving 9,155 cases. Time allowing, sophisticated methods to address missing data, such as multiple imputations, should be used for a more thorough investigation.
 
 In order to better understand the GSS dataset, we explored more than 25 variables of interest from question categories including life satisfaction, family life, politics, religion, and demographics.
 
@@ -205,10 +210,16 @@ names(factor)
 ```
 
 After this exploratory analysis, we chose to focus on 2 of these feeling/attitude variables for the remainder of the project denoted as happy and pray.  
-* Happy: "Taken all together, how would you say things are these days--would you say that you are very happy, pretty happy, or not too happy?
-* Pray: "About how often do you pray?"
 
-Our decision to reduce to to 2 was based on the following reasoning.
+* Happy, "Taken all together, how would you say things are these days--would you say that you are very happy, pretty happy, or not too happy?"
+* Pray, "About how often do you pray?"
+
+\pagebreak
+
+## Variable Reduction
+
+Our decision to reduce to to 2 explanatory variableswas based on the following three reasons.
+
 1. The data was either missing NA or Don't Know for > 3,000 respondents.  An example of this can be seen with the Happiness of Job variable.  While this variable is interesting, it would take our sample size down to approximately 6,000 respondents.
 
 ```{r, echo = FALSE, warning = FALSE}
@@ -220,6 +231,8 @@ ggplot(gss_cat, aes(gss_cat$happy_job)) +
 
 ```
 
+\pagebreak
+
 2. Collapsing the categories would require knowledge/information that we do not have time to research given the timelines of the project
 
 ```{r, echo = FALSE, warning = FALSE}
@@ -230,8 +243,7 @@ ggplot(gss_cat, aes(gss_cat$denomination)) +
   theme(axis.text.x = element_text(angle = 90))
 ```
 
-3. Most of the information in the data was captured by another variable.
-
+3. Most of the information in the data was captured by another variable. In the crosstab below, general happiness is tabulated in the columns and happines with a person's mariage is tabulated in the rows. For example, people who are very happy in their marriage tend to also be very happy in general.
 ```{r, echo = FALSE, warning = FALSE}
 
 # For Report, Example of redundant variable
@@ -260,9 +272,11 @@ ggplot(gss_cat, aes(x = pray, y = gss_cat$tvhours)) +
      coord_flip() 
 ```
 
-## Transformations of the TV hours watched  metric
+## Transformations of the TV hours watched metric
 
 One limitation of this study is that television watching is estimated for an average day for the respondent.  We see many instances of 24 and 0 hours of television watching.  We did not consider these outliers in the context of this study and what we know about television watching from the meter.
+
+\pagebreak
 
 The plot below show the distribution of TV hours.
 
@@ -287,7 +301,7 @@ ggplot(gss_cat, aes(log(gss_cat$tvhours) )) +
                      limits =c (0, 8))
 ```
 
-But, since we are also interested in looking at effects of "happy" and "pray" on "tvhours" we also created a binomial (watched any tv/did not watch tv).  Because the GSS also asks about an approximation of TV hours watched in an average day, and there is little meaningful difference between 12 hours and 13 hours we concluded that creating a multinomial variable of "light", "medium", "heavy" TV watching. 
+Because the GSS also asks about an approximation of TV hours watched in an average day, and there is little meaningful difference between 12 hours and 13 hours, we concluded that creating a multinomial variable of "light", "medium", "heavy" TV watching. The levels were 0 hours, 1-2 hours for light, 3-5 hours for medium, and 6+ hours for heavy. We also created a binary variable with the levels of watching TV or not TV for further modeling to see if the populations were different.
 
 ```{r, include = FALSE}
 gssv= getURL("https://raw.githubusercontent.com/jgronsbell/nielsen_final_proj/master/gss_mod.csv")
@@ -326,7 +340,7 @@ dim(gss_TV_happy)
 The first section of our analysis looks at using a general linear model on the log tranformation of TV hours using our in horizon variables compared to a model with TV hours.  (Note we also compared models with and without the log transformation and found improved fit with the log transformation, as expected.) 
 
 The following code is used to run GLM.
-```{r, warning = FALSE}
+```{r, warning = FALSE, cache=TRUE}
 
 #GLM models
 lm_out0 <- glm(data = gss_TV_happy, tvhours ~ gender + race + age  + HH_income )
@@ -338,7 +352,7 @@ lm_out3 <- glm(data = gss_TV_happy, logTVhours ~ gender + race + age +HH_income 
 lm_out4 <- glm(data = gss_TV_happy, logTVhours ~ gender + race + age +HH_income + happy + pray)
 ```
 
-```{r, include = FALSE}
+```{r, include = FALSE, cache=TRUE}
 
 # define y variables
 y0 <- lm_out0$y
@@ -350,19 +364,28 @@ y4 <- lm_out4$y
 ```
 
 CompareGLM() is a function from the rcompanion package that shows similarities and differences between outputs of different models. The model with the lowest AIC value was the last model shown below, using the log transformation, the standard predictor variables, and "happy," and "pray."
-```{r, warning = FALSE}
+```{r, warning = FALSE, cache=TRUE}
 compareGLM(lm_out0, lm_out1, lm_out2, lm_out3, lm_out4)
 ```
 
-The coefficient output for the last model shows signifigance for all variables at the same level, except "pray," $\alpha$ = 0.05.
-```{r, warning = FALSE}
+The coefficient output for the last model shows signifigance for all variables at the same level, except "pray," $\alpha$ = 0.05. 
+
+The comparison categories are as follows.
+
+* For race, Black
+* For gender, Female
+* For happy, Not very happy
+* For household income, \$1,000 to \$2,999 monthly
+* For pray, Less than once a week
+ 
+```{r, warning = FALSE, cache=TRUE}
 summary(lm_out4)
 ```
 
 ## Plot of Residuals of Prediction of TV Hours
 
 While the last model was our best fitting GLM model, the residual plot below shows that there is ample room for improvement on model fit. 
-```{r, warning = FALSE}
+```{r, warning = FALSE, cache=TRUE}
 plot(predict(lm_out4),y4,
      xlab = "predicted",ylab = "actual" )
 abline(a = 0,b = 1, col = "red")
@@ -371,11 +394,9 @@ abline(a = 0,b = 1, col = "red")
 
 # Logistic Regression 
 
-A brief story about recoding variables...
-
 Logistic regression is a probabalistic binary outcome model commonly used in social sciences. We selected this model because we were curious whether there was a difference between people who did and did not watch television on an average day.
 
-The following code is used to run logitic regression.
+The following code is used to run logistic regression.
 
 ```{r, include = FALSE}
 #making new dataset to keep data clean
@@ -383,33 +404,43 @@ gssv_log_reg <- gssv
 ```
 
 
-```{r, warning = FALSE}
+```{r, warning = FALSE, cache=TRUE}
 #simple logistic regression
 logit <- glm(tvhours_YN ~ age, data=gssv_log_reg,family="binomial")
 summary(logit)
 TVwatching_by_age <- predict(logit,type="response")
+```
+This is a simple logistic regression modeling the probability of watching TV based on one independent continuous variable (age). Per the above, age was significant. 
 
+```{r, warning = FALSE, cache=TRUE}
 #logistic regression with age and race
 logit_age_race <- glm(tvhours_YN ~ age + race, data=gssv_log_reg,family="binomial")
 summary(logit_age_race)
 TVwatching_by_age_race <- predict(logit_age_race,type="response")
+```
+The model was refined by adding race, which is significant.
 
+```{r, warning = FALSE, cache=TRUE}
 #logistic regression with age, race, and labor status
 logit_age_race_labor <- glm(tvhours_YN ~ age + race + labor, data=gssv_log_reg,family="binomial")
 summary(logit_age_race_labor)
 TVwatching_by_age_race_labor <- predict(logit_age_race_labor,type="response")
+```
+The addition of labor status is significant for school, unemployed, working full-time, and working part-time, but not for the remaining levels. Despite adding additional variables, the AIC does not decrease by much.
 
+```{r, warning = FALSE, cache=TRUE}
 #logistic regression for NAs as zero
 logit2 <- glm(tvhours_NA_0_YN ~ age + race , data=gssv_log_reg,family="binomial")
 summary(logit2)
 ```
+We also tried logistic regression using TV hours with all NA values converted to zero. Age and race were significant in this model, which is the same results as creating the model with NAs removed.
 
 
 # Random Forest Machine Learning 
 
 Random Forest is a classification machine learning model. Put simply, it’s an amalgamation of decision trees and model preferences that converge into a vote system to produce a categorization. It takes in numeric and categorical (factor) variables, as well as preferences such as variable importance, replacement, node size, and proximity.
 
-```{r, include = FALSE, warning = FALSE}
+```{r, include = FALSE, warning = FALSE, cache=TRUE}
 gssv$age<-as.numeric(gssv$age)
 
 #create dataset with tvhours not = NA
@@ -440,14 +471,14 @@ TheData <- TheData[complete.cases(TheData),]
 ```
 
 We ran three different random forest models:
-```{r, warning = FALSE}
+```{r, warning = FALSE, cache=TRUE}
 # select which variable you want to use to train the decision tree. 
 baseFormula <- tvhours_NA_0_cat ~ age + gender + race + HH_income
 happyFormula <- tvhours_NA_0_cat ~ age + gender + race + HH_income + happy
 prayFormula <- tvhours_NA_0_cat ~ age + gender + race + HH_income + happy + pray
 ```
 
-```{r, include = FALSE, warning = FALSE}
+```{r, include = FALSE, warning = FALSE, cache=TRUE}
 
 #create two arrays to store precisions and recalls
 numrow  = as.integer((nrow(TheData))/7)
@@ -459,7 +490,7 @@ We used 7-fold cross validation in a "for" loop. We divided the dataset into 7 p
 
 We wanted to see how the base model performed, and if adding “happy” and “pray” would improve the performance, if at all.
 
-```{r, include = FALSE, warning = FALSE}
+```{r, include = FALSE, warning = FALSE, cache=TRUE}
 for(i in 0:6){
   testrow <- (numrow * i) : (numrow * (i+1) -1)
   
@@ -502,7 +533,7 @@ for(i in 0:6){
 ```
 
 The following output describes the performance of each model. 
-```{r, warning = FALSE}
+```{r, warning = FALSE, cache=TRUE}
 fit
 happyFit
 prayFit
@@ -510,7 +541,7 @@ prayFit
 
 All models predicted “light” tv watching the best. “Heavy” and “none” were consistently the worst predicted.
 
-```{r, warning = FALSE}
+```{r, warning = FALSE, cache=TRUE}
 importance(fit, type = 1)
 importance(happyFit, type = 1)
 importance(prayFit, type = 1)
@@ -518,7 +549,7 @@ importance(prayFit, type = 1)
 
 The importance of variables (by mean decrease in accuracy when removed) are as follows in order: Age, household income, race, gender, happiness. "Pray" negatively impacted the model.
 
-```{r, warning = FALSE}
+```{r, warning = FALSE, cache=TRUE}
 plot(fit)
 plot(happyFit)
 plot(prayFit)
@@ -527,15 +558,24 @@ plot(prayFit)
 We used 500 trees, but the error % of each categorization plateaued after about 150 trees.
 
 
-# Results
+# Summary
 
-"Happy" and "pray" improved model fit in the GLM model, but "pray" was not important in the random forest model. The logistic regression model did not show much explanatory promise. Further research into ways to improve binomial and multinomial models fit could be fruitful. Certain categorical variables could have been recorded to a scale. This may improve model fit, and it would allow additional models to be tested.
+Results of including “happy” and “pray” in models of tv hours viewing were mixed. “Happy” and “pray” improved model fit beyond the standard demographic variables in the GLM model, but “pray” was not important in the random forest model. The logistic regression model did not show much explanatory promise
+
+## Ideas for future analysis
+
+* Considering a broader set of “off the horizon variables” would be interesting.  This may include:
+    + Using mathematical techniques, such as principal component analysis or LASSO regression
+    + Further understanding of the questionnaire design and probing of questions from GSS
+    + Subject matter expertise on self-reported responses about asking questions on  religious and happiness
+* Further research into ways to improve binomial and multinomial models fit would be beneficial.  One way to do this would be to re-code important categorical variables to a scale. This may improve model fit, and it would allow additional models to be tested.
+* Analysis into the residuals of the logistic regression to provide guidance on model fit.
 
 
 \pagebreak
 
 # References
 
-<!-- Need help using .bib file -->
+<!-- Use .bib file -->
 
 
